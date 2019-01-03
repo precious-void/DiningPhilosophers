@@ -1,6 +1,6 @@
 # DiningPhilosophers
 Dining philosophers problem solved with Python threadings` library. 
-Used Mutexes (Locks) and Semaphors.
+Used Mutexes (Locks) and priority of forks
 
 There`re several settings: 
 * *timeout* (time before game is stopped)

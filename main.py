@@ -11,16 +11,14 @@ logging.basicConfig(level=logging.DEBUG)
 
 numPhil = 5
 timeout = 30
-debug = False
+debug = True
 
 logger.propagate = debug
 counter = [0 for i in range(numPhil)]
 forks = [Lock() for i in range(numPhil)]
 
 
-
 class Philosopher(Thread):
-
     def __init__(self, name, index, left, right):
         super(Philosopher, self).__init__()
         self.index = index
@@ -31,11 +29,11 @@ class Philosopher(Thread):
 
     # Start eating
     def run(self):
-        if forks[self.left].acquire(timeout=random.randint(1, 10)/100):
+        if forks[max(self.left, self.right)].acquire():
             logger.debug('Философ {} номер {} взял левую вилку'.format(self.name, self.index))
             time.sleep(random.randint(1, 10)/100)
 
-            if forks[self.right].acquire(timeout=random.randint(1, 10)/100):
+            if forks[min(self.left, self.right)].acquire():
                 logger.debug('Философ {} номер {} взял правую вилку и начал есть'.format(self.name, self.index))
 
                 time.sleep(random.randint(1, 10)/10)
@@ -46,7 +44,7 @@ class Philosopher(Thread):
 
                 counter[self.index - 1] += 1
             else:
-                forks[self.left].release()
+                forks[max(self.left, self.right)].release()
 
             time.sleep(random.randint(1, 10)/10)
         
@@ -57,7 +55,7 @@ def start_play(numPhil):
     
     phil = []
     for i in range(1, numPhil+1):
-        phil.append(Philosopher('Phil'+str(i), i, i-2, i-1))
+        phil.append(Philosopher('Phil'+str(i), i, i%5, (i+1)%5))
 
     for i in phil: i.start()
         
