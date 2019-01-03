@@ -1,10 +1,19 @@
 from threading import Thread, Lock, BoundedSemaphore
 import time
+import random
+import logging
 
-global numPhil, timeout, counter, semaphore 
+
+global numPhil, timeout, counter, semaphore
+
+logger = logging.getLogger('PhilosophsLogger')
+logging.basicConfig(level=logging.DEBUG)
 
 numPhil = 5
-timeout = 100
+timeout = 30
+debug = False
+
+logger.propagate = debug
 counter = [0 for i in range(numPhil)]
 semaphore = BoundedSemaphore(numPhil - 2)
 
@@ -17,26 +26,23 @@ class Philosopher(Thread):
         self.name = name
         self.left = left
         self.right = right
-        print('Появился философ {} номер {}'.format(name, index))
+        logger.debug('Появился философ {} номер {}'.format(name, index))
 
     # Start eating
     def run(self):
         semaphore.acquire()
 
         self.left.acquire()
-        # print('Философ {} номер {} взял левую вилку'.format(self.name, self.index))
-        time.sleep(0.05)
-
+        logger.debug('Философ {} номер {} взял левую вилку'.format(self.name, self.index))
+        time.sleep(random.randint(1, 10)/100)
         self.right.acquire()
-        # print('Философ {} номер {} взял правую вилку и начал есть'.format(self.name, self.index))
-
-        time.sleep(1)
-        # print('Философ {} номер {} поел'.format(self.name, self.index))
-
+        logger.debug('Философ {} номер {} взял правую вилку и начал есть'.format(self.name, self.index))
+        time.sleep(random.randint(1, 10)/10)
+        logger.debug('Философ {} номер {} поел'.format(self.name, self.index))
         self.left.release()
         self.right.release()
         semaphore.release()
-        time.sleep(1)
+        time.sleep(random.randint(1, 10)/10)
         counter[self.index - 1] += 1
 
         self.run()
@@ -62,15 +68,6 @@ if __name__ == '__main__':
         t.daemon = True
         t.start()
         t.join(timeout)
-
     finally:
-        print('finished')
+        logger.debug('Finished')
         print(counter)
-    # k = 0
-    # numPhil = 5
-    # lock = BoundedSemaphore(1)
-    # while (k < 3):
-    #     t = Thread(target=start_play, args=(numPhil, lock))
-    #     t.start()
-    #     t.join()
-    #     k+=1
